@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Subtitle Extractor</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-image: url('13462.jpg'); /* O'rniga o'zingizning rasm manzilini kiriting */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.9); /* Oq fon biroz shaffof */
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            background-color: #007BFF;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+        .result a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .result a:hover {
+            background-color: #218838;
+        }
+        .result a:active {
+            background-color: #1e7e34;
+        }
+        .file-name {
+            margin-bottom: 10px;
+            font-style: italic;
+            color: #666;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Extract Subtitles from Video</h2>
+        <input type="file" id="videoFile" accept=".mkv,.mp4,.avi">
+        <div class="file-name" id="fileName"></div>
+        <button id="submitBtn" disabled>Extract Subtitles</button>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const videoFileInput = document.getElementById('videoFile');
+        const fileNameDiv = document.getElementById('fileName');
+        const submitBtn = document.getElementById('submitBtn');
+        const resultDiv = document.getElementById('result');
+
+        videoFileInput.addEventListener('change', () => {
+            const file = videoFileInput.files[0];
+            fileNameDiv.textContent = file ? `Selected file: ${file.name}` : '';
+            submitBtn.disabled = !videoFileInput.files.length;
+        });
+
+        submitBtn.addEventListener('click', async () => {
+            submitBtn.disabled = true;
+            resultDiv.innerHTML = "Extracting subtitles... Please wait.";
+
+            const formData = new FormData();
+            formData.append('video', videoFileInput.files[0]);
+
+            try {
+                const response = await fetch('/extract-subtitles', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Failed to extract subtitles.');
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+
+                resultDiv.innerHTML = `<a href="${url}" download="subtitles.srt">Download Subtitles</a>`;
+            } catch (error) {
+                resultDiv.textContent = 'Error: ' + error.message;
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
